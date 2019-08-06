@@ -1,7 +1,8 @@
 {
-    "name": "vendor/linphe",
+    "name": "yjtec/linphe",
     "description": "The Linphe Framework.",
     "keywords": ["framework", "linphe"],
+    "type": "library",
     "license": "MIT",
     "authors": [
         {
@@ -9,17 +10,10 @@
             "email": "18716463@qq.com"
         }
     ],
-    "require": {
-        "php": ">=7.0.0"
-    },
+    "require": {},
     "autoload": {
         "psr-4": {
-        }
-    },
-    "repositories": {
-        "packagist": {
-            "type": "composer",
-            "url": "https://packagist.laravel-china.org"
+            "Yjtec\\Linphe\\": "src/"
         }
     }
 }
