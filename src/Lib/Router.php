@@ -45,7 +45,7 @@ class Router {
                 }
                 break;
         }
-        return ['c\\index\\index', []];
+        return ['index\\index', []];
     }
 
     public static function requestType() {
