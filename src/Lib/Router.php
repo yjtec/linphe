@@ -15,7 +15,7 @@ namespace Yjtec\Linphe\Lib;
  */
 class Router {
 
-    const supportRequestType = ['get', 'post', 'cli'];
+    const supportRequestType = ['get', 'post', 'put', 'delete', 'options', 'head', 'cli'];
 
     public static $Routers = array(); //所有的路由,get路由,post路由,cli路由
     public static $requestType; //请求类型，GET,POST,CLI等
