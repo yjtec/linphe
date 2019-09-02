@@ -15,41 +15,54 @@ namespace Yjtec\Linphe\Lib;
  */
 class Router {
 
-    public static $requestType;
-    public static $getRouters;
-    public static $postRoutes;
+    const supportRequestType = ['get', 'post', 'cli'];
 
-    public static function get($route, $mcf) {
-        self::$getRouters[$route] = $mcf;
-    }
-
-    public static function post($route, $mcf) {
-        self::$postRoutes[$route] = $mcf;
-    }
+    public static $Routers = array(); //所有的路由,get路由,post路由,cli路由
+    public static $requestType; //请求类型，GET,POST,CLI等
+    public static $requestUri; //uri
 
     public static function getCLS() {
         self::requestType();
-        switch (self::$requestType) {
-            case 'GET':
-                foreach (self::$getRouters as $key => $route) {
-                    if (preg_match($key, $_SERVER['REQUEST_URI'], $param)) {
-                        return [$route, substr($param[0], strpos($param[0], '/') + 1)];
-                    }
+        self::requestUri();
+        if (self::$Routers[self::$requestType]) {
+            foreach (self::$Routers[self::$requestType] as $key => $route) {
+                if (preg_match($key, self::$requestUri, $matches)) {
+                    $param = self::$requestType == 'get' ? substr($matches[0], strpos($matches[0], '/') + 1) : (self::$requestType == 'post' ? $_POST : (self::$requestType == 'cli' ? $_SERVER['argv'] : array()));
+                    return [$route, $param];
                 }
-                break;
-            case 'POST':
-                foreach (self::$postRoutes as $key => $route) {
-                    if (preg_match($key, $_SERVER['REQUEST_URI'], $param)) {
-                        return [$route, $_POST];
-                    }
-                }
-                break;
+            }
         }
         return ['index\\index', []];
     }
 
     public static function requestType() {
-        self::$requestType = $_SERVER['REQUEST_METHOD'];
+        if (PHP_SAPI === 'cli') {
+            self::$requestType = 'cli';
+        } else {
+            self::$requestType = strtolower($_SERVER['REQUEST_METHOD']);
+        }
+    }
+
+    public static function requestUri() {
+        if (PHP_SAPI === 'cli') {
+            self::$requestUri = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : null;
+        } else {
+            self::$requestUri = $_SERVER['REQUEST_URI'];
+        }
+    }
+
+/////////////////////////////以下方法为设置路由/////////////////////////////
+    private static function setRoute($type, $route, $mcf) {
+        self::$Routers[$type][$route] = $mcf;
+    }
+
+    public static function __callStatic($name, $arguments) {
+        $func = strtolower($name);
+        if (in_array($func, self::supportRequestType)) {
+            self::setRoute($func, $arguments[0], $arguments[1]);
+        } else {
+            return '不支持的请求类型';
+        }
     }
 
 }
