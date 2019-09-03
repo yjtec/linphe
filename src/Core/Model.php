@@ -3,59 +3,43 @@
 namespace Yjtec\Linphe\Core;
 
 use Exception;
+use Yjtec\Linphe\Lib\Db\DbIntf;
+use Yjtec\Linphe\Lib\Tool;
 
 /**
  * Description of Model
  *
  * @author Administrator
  */
-class Model {
+class Model implements DbIntf {
 
     public $db;
+    protected $dbConfig;
     protected $tableName;
     protected $tablePreFix;
+    protected $fields;
 
     public function __construct($config = '') {
-        $this->db($config);
+        $this->dbConfig = $this->parseConfig($config);
+        $this->db($this->dbConfig);
     }
 
-    /**
-     * 切换当前的数据库连接
-     * @access public
-     * @param integer $linkNum  连接序号
-     * @param mixed $config  数据库连接信息
-     * @param boolean $force 强制重新连接
-     * @return Model
-     */
     public function db($config = '') {
         if (!$this->db) {
-            if (NULL === $config) {
-                $this->db->close(); // 关闭数据库连接
-                unset($this->db);
-                return;
-            } else {
-                $this->db = $this->getDb($config);
-            }
+            $this->db = $this->getDb($config);
         }
         return $this->db;
     }
 
-    private function getDb($db_config) {
+    private function getDb($dbConfig) {
         static $_instance = array();
-        $guid = $this->to_guid_string($db_config);
+        $guid = Tool::toGuidString($dbConfig);
         if (!isset($_instance[$guid])) {
-            $db_config = $this->parseConfig($db_config); // 读取数据库配置
-            if (empty($db_config['dbms'])) {
-                throw new Exception('数据库类型错误');
-            }
-            if (strpos($db_config['dbms'], '\\')) {// 数据库类型
-                $class = $db_config['dbms'];
-            } else {
-                $dbType = ucwords(strtolower($db_config['dbms']));
-                $class = '\\Yjtec\Linphe\\Lib\\Db\\' . $dbType;
-            }
+            $dbConfig = $this->parseConfig($dbConfig); // 读取数据库配置
+            $dbType = ucwords(strtolower($dbConfig['db_type']));
+            $class = '\\Yjtec\Linphe\\Lib\\Db\\' . $dbType;
             if (class_exists($class)) {// 检查驱动类
-                $_instance[$guid] = new $class($db_config);
+                $_instance[$guid] = new $class($dbConfig);
             } else {
                 throw new Exception('数据库驱动不存在');
             }
@@ -63,177 +47,110 @@ class Model {
         return $_instance[$guid];
     }
 
-    /**
-     * 根据PHP各种类型变量生成唯一标识号
-     * @param mixed $mix 变量
-     * @return string
-     */
-    function to_guid_string($mix) {
-        if (is_object($mix)) {
-            return spl_object_hash($mix);
-        } elseif (is_resource($mix)) {
-            $mix = get_resource_type($mix) . strval($mix);
-        } else {
-            $mix = serialize($mix);
-        }
-        return md5($mix);
-    }
-
-    /**
-     * 分析数据库配置信息，支持数组和DSN
-     * @access private
-     * @param mixed $db_config 数据库配置信息
-     * @return string
-     */
     private function parseConfig($db_config = '') {
-        if (!empty($db_config) && is_string($db_config)) {
-            $db_config = $this->parseDSN($db_config); // 如果DSN字符串则进行解析
-        } elseif (is_array($db_config)) { // 数组配置
-            $db_config = array_change_key_case($db_config);
-            $db_config = array(
-                'dbms' => $db_config['db_type'],
-                'username' => $db_config['db_user'],
-                'password' => $db_config['db_pwd'],
-                'hostname' => $db_config['db_host'],
-                'hostport' => $db_config['db_port'],
-                'database' => $db_config['db_name'],
-                'dsn' => isset($db_config['db_dsn']) ? $db_config['db_dsn'] : '',
-                'params' => isset($db_config['db_params']) ? $db_config['db_params'] : array(),
-                'charset' => isset($db_config['db_charset']) ? $db_config['db_charset'] : 'utf8',
-            );
-        } elseif (empty($db_config)) {
-// 如果配置为空，读取配置文件设置
-            $db_config = array(
-                'dbms' => 'pdo',
-                'username' => 'root',
-                'password' => '',
-                'hostname' => 'localhost',
-                'hostport' => '6379',
-                'database' => 'Yjtec\Linphe',
-                'charset' => 'utf-8',
-            );
+        if (!is_array($db_config)) {
+            $db_config = array();
         }
-        return $db_config;
+        return array(
+            'db_type' => isset($db_config['db_type']) && $db_config['db_type'] ? $db_config['db_type'] : "pdo",
+            'db_user' => isset($db_config['db_user']) && $db_config['db_user'] ? $db_config['db_user'] : "root",
+            'db_pwd' => isset($db_config['db_pwd']) && $db_config['db_pwd'] ? $db_config['db_pwd'] : "",
+            'db_host' => isset($db_config['db_host']) && $db_config['db_host'] ? $db_config['db_host'] : "localhost",
+            'db_port' => isset($db_config['db_port']) && $db_config['db_port'] ? $db_config['db_port'] : "3306",
+            'db_name' => isset($db_config['db_name']) && $db_config['db_name'] ? $db_config['db_name'] : "test",
+            'db_params' => isset($db_config['db_params']) && $db_config['db_params'] ? $db_config['db_params'] : array(),
+            'db_charset' => isset($db_config['db_charset']) && $db_config['db_charset'] ? $db_config['db_charset'] : 'utf8',
+        );
+    }
+
+    public function query($sql, $bind = array()) {
+        return $this->db->query($sql, $bind);
+    }
+
+    public function execute($sql, $bind = array()) {
+        return $this->db->execute($sql, $bind);
+    }
+
+    public function getTableName() {
+        if (empty($this->tableName)) {
+            $tablePreFix = !empty($this->tablePrefix) ? $this->tablePrefix : '';
+            if (!empty($this->tableName)) {
+                $tablePreFix .= $this->tableName;
+            } else {
+                $tableName .= Tool::parseName($this->getModelName());
+            }
+            $this->tableName = strtolower($tableName);
+        }
+        return $this->dbConfig['db_name'] . '.' . $this->tableName;
+    }
+
+    public function getModelName() {
+        $name = substr(get_class($this), 0, -strlen('Md'));
+//        if ($pos = strrpos($name, '\\')) {//有命名空间
+//            return substr($name, $pos + 1);
+//        }
+        return $name;
+    }
+
+    private function setDbTableName() {
+        return $this->db->tableName = $this->getTableName();
     }
 
     /**
-     * select，需要自己写sql语句
-     * @param type $sql
-     * @param type $param
-     * @return type
+     * 
+     * @param type $data
+     * @param type $all
      */
-    public function select($sql, $param = null) {
-        return $this->db->query($sql, $param);
+    public function add($data, $all = false) {
+        $this->setDbTableName();
+        return $this->db->add($data, $all);
     }
 
-    /**
-     * find，需要自己写sql语句
-     * @param type $sql
-     * @param type $param
-     * @return type
-     */
-    public function find($sql, $param) {
-        $data = $this->db->query($sql, $param);
-        if ($data) {
-            return $data[0];
-        }
-        return array();
+    public function del() {
+        $this->setDbTableName();
+        return $this->db->del();
     }
 
-    /**
-     * 更新数据
-     * @param type $table 表名
-     * @param type $param 字段与值
-     * @param type $where 更新条件
-     * @return type
-     */
-    public function update($table, $param, $where) {
-        $this->arrayLink($param);
-        $sql = "update {$table} set {$this->linkStr}";
-        if ($where) {
-            $this->where($where);
-            $sql .= ' where ' . $this->whereStr;
-        }
-        $p = array_merge($this->linkArray, $this->whereArray);
-        $this->_resetStrArray();
-        return $this->db->execute($sql, $p);
+    public function upd($data) {
+        $this->setDbTableName();
+        return $this->db->upd($data);
     }
 
-    /**
-     * 更新的之后，重置条件和字段值
-     */
-    public function _resetStrArray() {
-        $this->whereArray = array();
-        $this->linkArray = array();
-        $this->linkStr = '';
-        $this->whereStr = '';
+    public function slt($one = false) {
+        $this->setDbTableName();
+        return $this->db->slt($one);
     }
 
-    private $linkStr;
-    private $linkArray;
-
-    public function arrayLink(&$param, $linkSign = ',') {
-        $str = '';
-        foreach ($param as $k => $v) {
-            $this->linkArray[':Yjtec\LinpheLink_' . $k] = $v;
-            $str .= ('`' . $k . '`' . '=:Yjtec\LinpheLink_' . $k . $linkSign);
-        }
-        return $this->linkStr .= substr($str, 0, -1);
-    }
-
-    private $whereStr;
-    private $whereArray;
-
-    /**
-     * 传入一维或二维数组
-     * @param type $param
-     */
-    public function where($param) {
-        $str = '';
-        if (!empty($param) && is_array($param)) {
-            $str = $this->whereArray($param);
-        } elseif (is_string($param)) {
-            $str = $this->whereString($param, ' and ');
-        }
-        $this->whereStr .= $str;
+    public function fld($field = '*') {
+        $this->db->fld($field);
         return $this;
     }
 
-    private function whereString($param, $parse) {
-        return $parse . $param;
+    public function whr($where, $linkSn = 'and') {
+        $this->db->whr($where, $linkSn);
+        return $this;
     }
 
-    private function whereArray(&$param) {
-        $parse = $this->isParse($param);
-        $mainStr = '1';
-        foreach ($param as $field => $value) {
-            if (is_array($value)) {
-                $tempParse = $this->isParse($value);
-                $str = ' (1 ';
-                $t = 1;
-                foreach ($value as $sign => $v2) {
-                    $str .= $this->whereString(' `' . $field . '`' . $sign . ' :Yjtec\LinpheWhere_' . $field . $t, $tempParse); //如果是key value形式，就key=value
-                    $this->whereArray[':Yjtec\LinpheWhere_' . $field . $t] = $v2;
-                    $t++;
-                }
-                $str .= ')';
-                $mainStr .= $this->whereString($str, $parse);
-            } else {
-                $this->whereArray[':Yjtec\LinpheWhere_' . $field] = $value;
-                $mainStr .= $this->whereString(' `' . $field . '`=:Yjtec\LinpheWhere_' . $field, $parse); //如果是key value形式，就key=value
-            }
-        }
-        return $mainStr;
+    public function lmt($offset = 0, $rows = null) {
+        $this->db->lmt($offset, $rows);
+        return $this;
     }
 
-    private function isParse(&$param) {
-        if (isset($param['sign'])) {
-            $temp = $param['sign'];
-            unset($param['sign']);
-            return ' ' . $temp . ' ';
-        } else {
-            return ' and ';
-        }
+    public function ord($order) {
+        $this->db->ord($order);
+        return $this;
+    }
+
+    public function commit() {
+        
+    }
+
+    public function rollback() {
+        
+    }
+
+    public function startTrans() {
+        
     }
 
 }
