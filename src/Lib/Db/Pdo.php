@@ -361,7 +361,7 @@ class Pdo extends Driver {
      */
     public function connect($config = '') {
         if (!isset($this->linkPDO)) {
-            if ($this->config['db_persistent']) {
+            if (isset($this->config['db_persistent']) && $this->config['db_persistent']) {
                 $this->config['db_params'][Pdo::ATTR_PERSISTENT] = true; // 是否使用永久连接
             }
             if (version_compare(PHP_VERSION, '5.3.6', '<=')) {
