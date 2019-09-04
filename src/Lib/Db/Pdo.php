@@ -11,11 +11,8 @@ class Pdo extends Driver {
 
     protected $PDOStatement = null;
     protected $linkPDO = null;
-    // 是否使用永久连接
-    protected $pconnect = false;
     protected $config;
     protected $tableName;
-    protected $queryStr;
     protected $transTimes = 0;
     protected $error;
 ////////////sql中用到的变量////////////
@@ -38,16 +35,16 @@ class Pdo extends Driver {
     /**
      * 执行查询 返回数据集
      * @access public
-     * @param string $str  sql指令
+     * @param string $sql  sql指令
      * @param array $bind 参数绑定
      * @return mixed
      */
-    public function query($str, $bind = array()) {
+    public function query($sql, $bind = array()) {
         $this->connect();
         if (!empty($this->PDOStatement)) {
             $this->free(); //释放前次的查询结果
         }
-        $this->PDOStatement = $this->linkPDO->prepare($str);
+        $this->PDOStatement = $this->linkPDO->prepare($sql);
         if (false === $this->PDOStatement) {
             throw new Exception($this->error());
         }
@@ -67,16 +64,16 @@ class Pdo extends Driver {
     /**
      * 执行语句
      * @access public
-     * @param string $str  sql指令
+     * @param string $sql  sql指令
      * @param array $bind 参数绑定
      * @return integer
      */
-    public function execute($str, $bind = array()) {
+    public function execute($sql, $bind = array()) {
         $this->connect();
         if (!empty($this->PDOStatement)) {
             $this->free(); //释放前次的查询结果
         }
-        $this->PDOStatement = $this->linkPDO->prepare($str);
+        $this->PDOStatement = $this->linkPDO->prepare($sql);
         if (false === $this->PDOStatement) {
             throw new Exception($this->error());
         }
@@ -364,11 +361,11 @@ class Pdo extends Driver {
      */
     public function connect($config = '') {
         if (!isset($this->linkPDO)) {
-            if ($this->pconnect) {
-                $this->config['db_params'][Pdo::ATTR_PERSISTENT] = true;
+            if ($this->config['db_persistent']) {
+                $this->config['db_params'][Pdo::ATTR_PERSISTENT] = true; // 是否使用永久连接
             }
-            if (version_compare(PHP_VERSION, '5.3.6', '<=')) { //禁用模拟预处理语句
-                $this->config['db_params'][Pdo::ATTR_EMULATE_PREPARES] = false;
+            if (version_compare(PHP_VERSION, '5.3.6', '<=')) {
+                $this->config['db_params'][Pdo::ATTR_EMULATE_PREPARES] = false; //禁用模拟预处理语句
             }
             try {
                 $this->linkPDO = new \PDO("mysql:host=" . $this->config['db_host'] . ";port=" . $this->config['db_port'] . ";dbname=" . $this->config['db_name'] . "", $this->config['db_user'], $this->config['db_pwd'], $this->config['db_params']);

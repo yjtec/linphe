@@ -18,7 +18,7 @@ class Router {
     const supportRequestType = ['get', 'post', 'put', 'delete', 'options', 'head', 'cli'];
 
     public static $Routers = array(); //所有的路由,get路由,post路由,cli路由
-    public static $requestType; //请求类型，GET,POST,CLI等
+    public static $requestType; //请求类型，GET,POST等,特殊的CLI
     public static $requestUri; //uri
 
     public static function getCLS() {
@@ -27,7 +27,18 @@ class Router {
         if (self::$Routers[self::$requestType]) {
             foreach (self::$Routers[self::$requestType] as $key => $route) {
                 if (preg_match($key, self::$requestUri, $matches)) {
-                    $param = self::$requestType == 'get' ? substr($matches[0], strpos($matches[0], '/') + 1) : (self::$requestType == 'post' ? $_POST : (self::$requestType == 'cli' ? $_SERVER['argv'] : array()));
+                    $param = [];
+                    switch (self::$requestType) {
+                        case 'cli':
+                            $_SERVER['argv'];
+                            break;
+                        case 'post':
+                            $param = $_POST;
+                            break;
+                        case 'get':
+                        default :
+                            $param = isset($matches[0]) ? substr($matches[0], strpos($matches[0], '/') + 1) : [];
+                    }
                     return [$route, $param];
                 }
             }
