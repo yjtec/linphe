@@ -77,7 +77,7 @@ class Model implements DbIntf {
             if (!empty($this->tableName)) {
                 $tablePreFix .= $this->tableName;
             } else {
-                $tableName .= Tool::parseName($this->getModelName());
+                $tableName = Tool::parseName($this->getModelName());
             }
             $this->tableName = strtolower($tableName);
         }
@@ -86,14 +86,14 @@ class Model implements DbIntf {
 
     public function getModelName() {
         $name = substr(get_class($this), 0, -strlen('Md'));
-//        if ($pos = strrpos($name, '\\')) {//有命名空间
-//            return substr($name, $pos + 1);
-//        }
+        if ($pos = strrpos($name, '\\')) {//有命名空间
+            return substr($name, $pos + 1);
+        }
         return $name;
     }
 
     private function setDbTableName() {
-        return $this->db->tableName = $this->getTableName();
+        return $this->db->setTableName($this->getTableName());
     }
 
     /**
@@ -101,43 +101,43 @@ class Model implements DbIntf {
      * @param type $data
      * @param type $all
      */
-    public function add($data, $all = false) {
+    public function add($data) {
         $this->setDbTableName();
-        return $this->db->add($data, $all);
+        return $this->db->add($data);
     }
 
-    public function del() {
+    public function delete() {
         $this->setDbTableName();
-        return $this->db->del();
+        return $this->db->delete();
     }
 
-    public function upd($data) {
+    public function update($data) {
         $this->setDbTableName();
-        return $this->db->upd($data);
+        return $this->db->update($data);
     }
 
-    public function slt($one = false) {
+    public function select($one = false) {
         $this->setDbTableName();
-        return $this->db->slt($one);
+        return $this->db->select($one);
     }
 
-    public function fld($field = '*') {
-        $this->db->fld($field);
+    public function field($field = '*') {
+        $this->db->field($field);
         return $this;
     }
 
-    public function whr($where, $linkSn = 'and') {
-        $this->db->whr($where, $linkSn);
+    public function where($where, $linkSn = 'and') {
+        $this->db->where($where, $linkSn);
         return $this;
     }
 
-    public function lmt($offset = 0, $rows = null) {
-        $this->db->lmt($offset, $rows);
+    public function limit($offset = 0, $rows = null) {
+        $this->db->limit($offset, $rows);
         return $this;
     }
 
-    public function ord($order) {
-        $this->db->ord($order);
+    public function order($order) {
+        $this->db->order($order);
         return $this;
     }
 

@@ -19,6 +19,7 @@ class Pdo extends Driver {
     protected $transTimes = 0;
     protected $error;
 ////////////sql中用到的变量////////////
+    protected $numRows;
     protected $whereStr = '1';
     protected $whereBindArray = [];
     protected $fields = '';
@@ -109,22 +110,80 @@ class Pdo extends Driver {
     }
 
 /////////////////////////////////////以下方法为新支持方法/////////////////////////////////////
-    public function add($data, $all = false) {
-        
+    /**
+     * 新增多条数据
+     * [[field=>value,field=>value,field=>value],[field=>value,field=>value,field=>value],[field=>value,field=>value,field=>value]]
+     * @param type $data
+     * @return boolean
+     */
+    public function add($data) {
+        if (empty($data)) {
+            return false;
+        }
+        if (!is_array(current($data))) {
+            $data = [$data];
+        }
+        $insertSetStr = '(';
+        $insertBindStr = '(';
+        $insertBindArray = [];
+        $i = 0;
+        foreach ($data as $row) {
+            foreach ($row as $key => $val) {
+                if (is_numeric($key)) {
+                    continue;
+                }
+                if ($i == 0) {
+                    $insertSetStr .= '`' . $key . '`,';
+                }
+                $bindKey = ':YjtecInsertBind' . strval($key) . $i;
+                $insertBindStr .= $bindKey . ',';
+                $insertBindArray[$bindKey] = $val;
+            }
+            $insertBindStr = rtrim($insertBindStr, ',') . '),(';
+            $i++;
+        }
+        $sql = 'INSERT INTO ' . $this->tableName . ' ' . rtrim($insertSetStr, ',') . ')' . ' VALUES ' . rtrim($insertBindStr, ',(');
+        if ($numRows = $this->execute($sql, $insertBindArray)) {
+            $this->resetWord();
+            if ($i == 1) {
+                return $this->getLastInsertId();
+            }
+        }
+        return $numRows;
     }
 
-    public function del() {
-        
+    public function delete() {
+        $sql = 'DELETE FROM ' . $this->tableName . ' WHERE ' . $this->whereStr;
+        $rs = $this->execute($sql, $this->whereBindArray);
+        $this->resetWord();
+        return $rs;
     }
 
-    public function upd($data) {
-        
+    public function update($data) {
+        if (empty($data)) {
+            return false;
+        }
+        $updateDataStr = '';
+        $updateBindArray = [];
+        foreach ($data as $key => $val) {
+            if (is_numeric($key)) {
+                continue;
+            }
+            $bindKey = ':YjtecUpdateBind' . strval($key);
+            $updateDataStr .= '`' . $key . '`=' . $bindKey . ',';
+            $updateBindArray[$bindKey] = $val;
+        }
+        $sql = 'UPDATE ' . $this->tableName . ' SET ' . rtrim($updateDataStr, ',') . ' WHERE ' . $this->whereStr;
+        $rs = $this->execute($sql, array_merge($updateBindArray, $this->whereBindArray));
+        $this->resetWord();
+        return $rs;
     }
 
-    public function slt($one = false) {
+    public function select($one = false) {
         $limit = $one ? "LIMIT 0,1" : $this->limit;
-        $sql = "SELECT " . $this->fields ? $this->fields : "*" . ' FROM ' . $this->tableName . ' WHERE ' . $this->whereStr . ' ' . $this->order . ' ' . $limit . ' ';
+        $sql = "SELECT " . ($this->fields ? $this->fields : "*") . ' FROM ' . $this->tableName . ' WHERE ' . $this->whereStr . ' ' . $this->order . ' ' . $limit . ' ';
         $result = $this->query($sql, $this->whereBindArray);
+        $this->resetWord();
         if ($one) {
             return empty($result) && !isset($result[0]) ? [] : $result[0];
         }
@@ -138,7 +197,10 @@ class Pdo extends Driver {
      * @param type $field
      * @return type
      */
-    public function fld($field = '*') {
+    public function field($field = '*') {
+        if ($field == '*') {
+            return $field;
+        }
         if (is_string($field)) {
             $field = explode(',', $field);
         }
@@ -149,39 +211,41 @@ class Pdo extends Driver {
             }
             $fStr = rtrim($fStr, ',');
         }
-        $this->fields .= $field ? ',' . $field : null;
+        $this->fields .= $fStr ? ($this->fields ? ',' : '') . $fStr : '';
         return $this->fields;
     }
 
-    public function lmt($offset = 0, $rows = null) {
-        $this->limit = 'LIMIT ' . $offset . $rows ? ',' . $rows : null;
+    public function limit($offset = 0, $rows = null) {
+        $this->limit = 'LIMIT ' . $offset . ($rows ? ',' . $rows : null);
         return $this->limit;
     }
 
-    public function ord($order) {
+    public function order($order) {
         $this->order = 'ORDER BY ' . $order;
         return $this->order;
     }
 
     /**
      * Where条件形式
-     * ①数组[field=>value,field=>value,[field=>value,'linkSn'=>'<>'],[field=>value,'linkSn'=>'<>'],field=>value,'linkSn'=>'and/or/like']
+     * ①数组[field=>value,field=>value,[field=>value,'sn'=>'<>'],[field=>value,'sn'=>'<>'],field=>value,'sn'=>'and/or/like']
      * ②字符串，直接拼接，注意linkSn问题
      * @param type $where
      * @param type $linkSn
      */
-    public function whr($where, $linkSn = 'and') {
+    public function where($where, $linkSn = 'and') {
         if (is_string($where)) {
             $this->whereStr .= ' ' . $linkSn . ' ' . $where;
         } elseif (is_array($where)) {
-            $linkSn = isset($where['linkSn']) ? $where['linkSn'] : $linkSn;
+            $linkSn = isset($where['sn']) ? $where['sn'] : $linkSn;
+            unset($where['sn']);
             foreach ($where as $key => $val) {
                 if (!is_array($val)) {
                     $bindKey = ':YjtecWhereBind' . strval($key);
                     $this->whereStr .= ' ' . $linkSn . ' `' . $key . '`=' . $bindKey;
                     $this->whereBindArray[$bindKey] = $val;
                 } else {
-                    $KeyValLinkSn = isset($val['linkSn']) ? $val['linkSn'] : '=';
+                    $KeyValLinkSn = isset($val['sn']) ? $val['sn'] : '=';
+                    unset($val['sn']);
                     foreach ($val as $k => $v) {
                         $bindKey2 = ':YjtecWhereBind' . strval($k);
                         $this->whereStr .= ' ' . $linkSn . ' `' . $k . '`' . $KeyValLinkSn . $bindKey2;
@@ -199,6 +263,10 @@ class Pdo extends Driver {
         $this->fields = '';
         $this->limit = '';
         $this->order = '';
+    }
+
+    public function setTableName($tableName) {
+        $this->tableName = $tableName;
     }
 
 /////////////////////////////////////以下方法为旧方法-不需要修改的方法/////////////////////////////////////

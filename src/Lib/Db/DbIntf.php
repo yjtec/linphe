@@ -27,49 +27,49 @@ interface DbIntf {
      * @param type $data
      * @param type $all 是否是多新增
      */
-    public function add($data, $all = false);
+    public function add($data);
 
     /**
      * 删除
      */
-    public function del();
+    public function delete();
 
     /**
      * 更新
      * @param type $data
      */
-    public function upd($data);
+    public function update($data);
 
     /**
      * 查询
      * @param type $one 是否是返回单个结果
      */
-    public function slt($one = false);
+    public function select($one = false);
 
     /**
      * 设置slt返回哪些字段
      * @param type $field
      */
-    public function fld($field = '*');
+    public function field($field = '*');
 
     /**
      * 设置条件
      * @param type $where
      */
-    public function whr($where, $linkSn = 'and');
+    public function where($where, $linkSn = 'and');
 
     /**
      * 设置limit
      * @param type $offset
      * @param type $rows
      */
-    public function lmt($offset = 0, $rows = null);
+    public function limit($offset = 0, $rows = null);
 
     /**
      * 设置排序
      * @param type $order
      */
-    public function ord($order);
+    public function order($order);
 
     /////////////////////////////事务支持/////////////////////////////
     public function startTrans();

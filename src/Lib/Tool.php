@@ -32,7 +32,7 @@ class Tool {
      * @param integer $type 转换类型
      * @return string
      */
-    function parseName($name, $type = 0) {
+    public static function parseName($name, $type = 0) {
         if ($type) {
             return ucfirst(preg_replace_callback('/_([a-zA-Z])/', function($match) {
                         return strtoupper($match[1]);
