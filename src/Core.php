@@ -24,7 +24,7 @@ class Core {
         if (!method_exists($controller, $function)) {
             throw new Exception('不存在的方法');
         }
-        return call_user_func(array($controller, $function), $routes[1]);
+        return call_user_func_array(array($controller, $function), $routes[1]);
     }
 
 }
