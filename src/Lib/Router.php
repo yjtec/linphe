@@ -37,7 +37,7 @@ class Router {
                             break;
                         case 'get':
                         default :
-                            $param =  isset($matches[0]) ? explode('/',substr($param[0], strpos($param[0], '/') + 1)) : [];
+                            $param =  isset($matches[0]) ? explode('/',substr($matches[0], strpos($matches[0], '/') + 1)) : [];
                     }
                     return [$route, $param];
                 }
