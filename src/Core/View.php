@@ -121,7 +121,7 @@ class View {
         if (is_file($template)) {
             return $template;
         }
-        $template = self::$baseDir . '/view/' . $template . '.php';
+        $template = (self::$baseDir ? self::$baseDir : '.') . '/view/' . $template . '.php';
         return $template;
     }
 

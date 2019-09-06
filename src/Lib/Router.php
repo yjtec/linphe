@@ -30,14 +30,14 @@ class Router {
                     $param = [];
                     switch (self::$requestType) {
                         case 'cli':
-                            $_SERVER['argv'];
+                            $param = $_SERVER['argv'];
                             break;
                         case 'post':
                             $param = $_POST;
                             break;
                         case 'get':
                         default :
-                            $param =  isset($matches[0]) ? explode('/',substr($matches[0], strpos($matches[0], '/') + 1)) : [];
+                            $param = isset($matches[0]) ? explode('/', substr($matches[0], strpos($matches[0], '/') + 1)) : [];
                     }
                     return [$route, $param];
                 }

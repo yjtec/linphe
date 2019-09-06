@@ -6,7 +6,7 @@ namespace Yjtec\Linphe\Lib\Db;
  *
  * @author Administrator
  */
-interface DbIntf {
+interface Intf {
 
     /**
      * 基础查询方法

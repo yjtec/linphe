@@ -7,6 +7,6 @@ namespace Yjtec\Linphe\Lib\Db;
  *
  * @author Administrator
  */
-abstract class Driver implements DbIntf {
+abstract class Driver implements Intf {
     //put your code here
 }

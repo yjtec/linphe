@@ -3,7 +3,7 @@
 namespace Yjtec\Linphe\Core;
 
 use Exception;
-use Yjtec\Linphe\Lib\Db\DbIntf;
+use Yjtec\Linphe\Lib\Db\Intf;
 use Yjtec\Linphe\Lib\Tool;
 
 /**
@@ -11,7 +11,7 @@ use Yjtec\Linphe\Lib\Tool;
  *
  * @author Administrator
  */
-class Model implements DbIntf {
+class Model implements Intf {
 
     public static $dbInstance;
     public $db;
