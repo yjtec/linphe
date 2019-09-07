@@ -121,8 +121,22 @@ class View {
         if (is_file($template)) {
             return $template;
         }
-        $template = (self::$baseDir ? self::$baseDir : '.') . '/view/' . $template . '.php';
-        return $template;
+        return (self::$baseDir ? self::$baseDir : '.') . '/view/' . ($template ? $template : self::getCallFunction()) . '.php';
+    }
+
+    private static function getCallFunction() {
+        $call = [];
+        $backtrace = debug_backtrace();
+        foreach ($backtrace as $k => $b) {
+            if (isset($b['class']) && isset($b['function']) && isset($b['type']) && $b['class'] == 'Yjtec\\Linphe\\Core\\View' && $b['function'] == 'display' && $b['type'] == '::') {
+                $call = $backtrace[$k + 1];
+                break;
+            }
+        }
+        if (isset($call['class']) && isset($call['function'])) {
+            return str_replace('\\', '/', substr($call['class'], strpos($call['class'], '\\') + 1)) . '/' . $call['function'];
+        }
+        return null;
     }
 
 }
