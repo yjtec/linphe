@@ -33,7 +33,7 @@ class Router {
                             $param = $_SERVER['argv'];
                             break;
                         case 'post':
-                            $param = $_POST;
+                            $param = [$_POST];
                             break;
                         case 'get':
                         default :
