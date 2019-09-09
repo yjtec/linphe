@@ -70,9 +70,15 @@ class Router {
     public static function __callStatic($name, $arguments) {
         $func = strtolower($name);
         if (in_array($func, self::supportRequestType)) {
+            if (!isset($arguments[0]) || !isset($arguments[0])) {
+                return false;
+            }
+            if (isset($arguments[2]) && is_callable($arguments[2])) {
+                $arguments[2]();
+            }
             self::setRoute($func, $arguments[0], $arguments[1]);
         } else {
-            return '不支持的请求类型';
+            throw new Exception('不支持的请求类型');
         }
     }
 
