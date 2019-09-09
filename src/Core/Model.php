@@ -72,9 +72,9 @@ class Model implements Intf {
     public function getModelName() {
         $name = substr(get_class($this), 0, -strlen('Md'));
         if ($pos = strrpos($name, '\\')) {//有命名空间
-            return substr($name, $pos + 1);
+            $name = substr($name, $pos + 1);
         }
-        return $name;
+        return strtolower(preg_replace("/([A-Z])/", "_\\1", $name));
     }
 
     private function setDbTableName() {
