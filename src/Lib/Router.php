@@ -30,7 +30,7 @@ class Router {
                     $param = [];
                     switch (self::$requestType) {
                         case 'cli':
-                            $param = $_SERVER['argv'];
+                            $param = [$_SERVER['argv']];
                             break;
                         case 'post':
                             $param = [$_POST];
