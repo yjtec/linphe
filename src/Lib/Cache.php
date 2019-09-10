@@ -2,8 +2,6 @@
 
 namespace Yjtec\Linphe\Lib;
 
-use Yjtec\Linphe\Lib\Cache\Intf;
-
 /**
  * Description of Cache
  *
