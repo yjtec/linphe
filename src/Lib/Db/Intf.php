@@ -47,6 +47,11 @@ interface Intf {
     public function select($one = false);
 
     /**
+     * 只返回数量
+     */
+    public function count();
+
+    /**
      * 设置slt返回哪些字段
      * @param type $field
      */

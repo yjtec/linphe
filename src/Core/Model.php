@@ -139,4 +139,8 @@ class Model implements Intf {
         return $this->db->rollback();
     }
 
+    public function count() {
+        return $this->db->count();
+    }
+
 }
