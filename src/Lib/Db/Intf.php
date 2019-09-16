@@ -44,12 +44,7 @@ interface Intf {
      * 查询
      * @param type $one 是否是返回单个结果
      */
-    public function select($one = false);
-
-    /**
-     * 只返回数量
-     */
-    public function count();
+    public function select($one = false, $count = false);
 
     /**
      * 设置slt返回哪些字段

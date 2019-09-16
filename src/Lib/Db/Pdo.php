@@ -178,7 +178,7 @@ class Pdo extends Driver {
 
     public function select($one = false, $count = false) {
         $limit = $one ? "LIMIT 0,1" : $this->limit;
-        $filed = ($count ? 'count(*)' : ($this->fields ? $this->fields : "*"));
+        $filed = ($count ? 'count(*) as cnt' : ($this->fields ? $this->fields : "*"));
         $sql = "SELECT " . $filed . ' FROM ' . $this->tableName . ' WHERE ' . $this->whereStr . ' ' . $this->order . ' ' . $limit . ' ';
         $result = $this->query($sql, $this->whereBindArray);
         $this->resetWord();
@@ -186,10 +186,6 @@ class Pdo extends Driver {
             return empty($result) && !isset($result[0]) ? [] : $result[0];
         }
         return $result;
-    }
-
-    public function count() {
-        return $this->select(TRUE, true);
     }
 
     /**

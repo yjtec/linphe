@@ -101,9 +101,9 @@ class Model implements Intf {
         return $this->db->update($data);
     }
 
-    public function select($one = false) {
+    public function select($one = false, $count = false) {
         $this->setDbTableName();
-        return $this->db->select($one);
+        return $this->db->select($one, $count);
     }
 
     public function field($field = '*') {
@@ -140,7 +140,11 @@ class Model implements Intf {
     }
 
     public function count() {
-        return $this->db->count();
+        $cnt = $this->select(TRUE, true);
+        if (isset($cnt['cnt'])) {
+            return $cnt['cnt'];
+        }
+        return 0;
     }
 
 }
