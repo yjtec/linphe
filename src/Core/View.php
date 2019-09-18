@@ -129,7 +129,11 @@ class View {
         $backtrace = debug_backtrace();
         foreach ($backtrace as $k => $b) {
             if (isset($b['class']) && isset($b['function']) && isset($b['type']) && $b['class'] == 'Yjtec\\Linphe\\Core\\View' && $b['function'] == 'display' && $b['type'] == '::') {
-                $call = $backtrace[$k + 1];
+                if ($backtrace[$k + 1]['class'] == 'Yjtec\\Linphe\\Core\\Controller' && $backtrace[$k + 1]['function'] == 'display') {//这个是通过Controller的display调用的
+                    $call = $backtrace[$k + 2];
+                } else {
+                    $call = $backtrace[$k + 1];
+                }
                 break;
             }
         }

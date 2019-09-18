@@ -21,6 +21,21 @@ class Controller {
     }
 
     /**
+     * 显示模板
+     * @param type $templateFile
+     * @param type $charset
+     * @param type $contentType
+     * @param type $content
+     * @param type $prefix
+     * @param type $HTTP_CACHE_CONTROL
+     * @return $this
+     */
+    protected function display($templateFile = '', $charset = '', $contentType = '', $content = '', $prefix = '', $HTTP_CACHE_CONTROL = '') {
+        View::display($templateFile, $charset, $contentType, $content, $prefix, $HTTP_CACHE_CONTROL);
+        return $this;
+    }
+
+    /**
      * Ajax方式返回数据到客户端
      * @access protected
      * @param mixed $data 要返回的数据
