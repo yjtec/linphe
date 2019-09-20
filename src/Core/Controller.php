@@ -9,6 +9,10 @@ namespace Yjtec\Linphe\Core;
  */
 class Controller {
 
+    public function __construct() {
+        ;
+    }
+
     /**
      * 携带变量
      * @param type $name

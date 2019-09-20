@@ -2,14 +2,8 @@
 
 namespace Yjtec\Linphe\Lib;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /**
- * Description of Router
+ * 路由，Router::get(正则，匹配的类，类的方法，预调用函数);
  *
  * @author Administrator
  */
@@ -25,33 +19,13 @@ class Router {
         self::requestType();
         self::requestUri();
         if (self::$Routers[self::$requestType]) {
-            foreach (self::$Routers[self::$requestType] as $key => $route) {
-                if (preg_match($key, self::$requestUri, $matches)) {
-                    $param = [];
-                    switch (self::$requestType) {
-                        case 'cli':
-                            $param = [$_SERVER['argv']];
-                            break;
-                        case 'post':
-                            $param = [$_POST];
-                            break;
-                        case 'get':
-                        default :
-                            if (count($matches) > 1) {
-                                unset($matches[0]);
-                                foreach ($matches as &$m) {
-                                    $m = str_replace('/', '', $m);
-                                }
-                                $param = array_values($matches);
-                            } else {
-                                $param = isset($matches[0]) && $matches[0] ? explode('/', substr($matches[0], strpos($matches[0], '/') + 1)) : [];
-                            }
-                    }
-                    return [$route, $param];
+            foreach (self::$Routers[self::$requestType] as $route => $class_function) {
+                if (preg_match($route, self::$requestUri, $matches)) {
+                    return [$class_function[0], $class_function[1], self::getParam($matches)];
                 }
             }
         }
-        return ['index\\index', []];
+        return [];
     }
 
     public static function requestType() {
@@ -70,21 +44,38 @@ class Router {
         }
     }
 
+    public static function getParam($matches) {
+        $param = [];
+        switch (self::$requestType) {
+            case 'cli':
+                $param = [$_SERVER['argv']];
+                break;
+            case 'post':
+                $param = [$_POST];
+                break;
+            case 'get':
+            default :
+                unset($matches[0]);
+                $param = array_values(str_replace('/', '', $matches));
+        }
+        return $param;
+    }
+
 /////////////////////////////以下方法为设置路由/////////////////////////////
-    private static function setRoute($type, $route, $mcf) {
-        self::$Routers[$type][$route] = $mcf;
+    private static function setRoute($type, $route, $class, $function = '') {
+        self::$Routers[$type][$route] = [$class, $function];
     }
 
     public static function __callStatic($name, $arguments) {
         $func = strtolower($name);
         if (in_array($func, self::supportRequestType)) {
-            if (!isset($arguments[0]) || !isset($arguments[0])) {
+            if (!isset($arguments[0]) || !isset($arguments[1])) {
                 return false;
             }
-            if (isset($arguments[2]) && is_callable($arguments[2])) {
-                $arguments[2]();
+            if (isset($arguments[3]) && is_callable($arguments[3])) {
+                $arguments[3]();
             }
-            self::setRoute($func, $arguments[0], $arguments[1]);
+            self::setRoute($func, $arguments[0], $arguments[1], isset($arguments[2]) && $arguments[2] ? $arguments[2] : '');
         } else {
             throw new Exception('不支持的请求类型');
         }

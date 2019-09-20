@@ -138,7 +138,7 @@ class View {
             }
         }
         if (isset($call['class']) && isset($call['function'])) {
-            return str_replace('\\', '/', substr($call['class'], strpos($call['class'], '\\') + 1)) . '/' . $call['function'];
+            return str_replace('\\', '/', $call['class']) . '/' . $call['function'];
         }
         return null;
     }
