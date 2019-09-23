@@ -14,18 +14,25 @@ class Router {
     public static $Routers = array(); //所有的路由,get路由,post路由,cli路由
     public static $requestType; //请求类型，GET,POST等,特殊的CLI
     public static $requestUri; //uri
+    public static $CurRouter = array();
 
+    /**
+     * 一个router的标准样子，array[类，方法，参数]，其中方法和参数可以为空
+     * @return type
+     */
     public static function getCLS() {
         self::requestType();
         self::requestUri();
+        self::$CurRouter = [];
         if (self::$Routers[self::$requestType]) {
             foreach (self::$Routers[self::$requestType] as $route => $class_function) {
                 if (preg_match($route, self::$requestUri, $matches)) {
-                    return [$class_function[0], $class_function[1], self::getParam($matches)];
+                    self::$CurRouter = [$class_function[0], $class_function[1], self::getParam($matches)];
+                    break;
                 }
             }
         }
-        return [];
+        return self::$CurRouter;
     }
 
     public static function requestType() {
