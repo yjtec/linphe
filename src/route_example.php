@@ -1,7 +1,8 @@
 <?php
 
-use Yjtec\Linphe\Lib\Router;
 use Config\Conf;
+use Yjtec\Linphe\Lib\Router;
+use Yjtec\Linphe\Lib\Schedule;
 
 if (php_sapi_name() == "cli") {// 只允许在cli下面运行 
 //////////////////消费者//////////////////
@@ -14,13 +15,15 @@ if (php_sapi_name() == "cli") {// 只允许在cli下面运行
         }
     }
     );
+    Schedule::set('* * * * *', 'app\\index\\index', 'index'); //分 时 天 月 周（只能是数字或星号，支持/和-），类，方法
+    //注意，使用schedule的cli路由，会导致定时任务失效
 } else {
 //////////////////上传-生产者//////////////////
 //上传
-    Router::post("/upload/u", "app\\index\\upload");
+    Router::post("/upload/u", "app\\index", 'upload'); //支持普通方法和静态方法
 //查询
-    Router::get("/status\/[0-9]*/u", "app\\index\\status");
-    Router::get("/notify/u", "app\\index\\notify");
+    Router::get("/status\/[0-9]*/u", "app\\index", 'status');
+    Router::get("/notify/u", "app\\index", 'notify');
 //管理员
-    Router::get("/admin\/jobs(\/[0-9]*)(\/[0-9]*)/u", "app\\admin\\mkpano\\jobs\\jlist");
+    Router::get("/admin\/jobs(\/[0-9]*)(\/[0-9]*)/u", "app\\admin\\mkpano\\jobs", 'jlist');
 }
