@@ -15,8 +15,8 @@ class Schedule {
 
     public static function run() {
         foreach (self::$Schedules as $key => $sch) {
-            self::$Schedules[$key]['time'] = isset($sch['isFormatTime']) && $sch['isFormatTime'] ? $sch['time'] : self::formateTime($sch['time']);
-            self::$Schedules[$key]['isFormatTime'] = 1;
+            self::$Schedules[$key]['time'] = $sch['time'] = isset($sch['isFormatTime']) && $sch['isFormatTime'] ? $sch['time'] : self::formateTime($sch['time']);
+            self::$Schedules[$key]['isFormatTime'] = $sch['isFormatTime'] = 1;
             if (!self::inTime($sch['time'])) {
                 continue;
             }
@@ -100,8 +100,8 @@ class Schedule {
         $times[4] = (intval($times[4]) >= 1 && intval($times[4]) <= 7 ? intval(intval($times[4])) : '*'); //周，1-7
         $times[3] = (intval($times[3]) >= 1 && intval($times[3]) <= 12 ? intval(intval($times[3])) : '*'); //月，1-12
         $times[2] = (intval($times[2]) >= 1 && intval($times[2]) <= 31 ? intval(intval($times[2])) : '*'); //日，1-31
-        $times[1] = (intval($times[1]) >= 0 && intval($times[1]) <= 23 ? intval(intval($times[1])) : '*'); //时，0-23
-        $times[0] = (intval($times[0]) >= 0 && intval($times[0]) <= 59 ? intval(intval($times[0])) : '*'); //时，0-59
+        $times[1] = (intval($times[1]) >= 0 && intval($times[1]) <= 23 && $times[1] != '*' ? intval(intval($times[1])) : '*'); //时，0-23
+        $times[0] = (intval($times[0]) >= 0 && intval($times[0]) <= 59 && $times[0] != '*' ? intval(intval($times[0])) : '*'); //时，0-59
         return $times;
     }
 
