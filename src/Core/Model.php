@@ -15,8 +15,8 @@ class Model implements Intf {
 
     public static $dbInstance;
     public $db;
-    protected $dbConfig;
-    protected $tableName;
+    public $dbConfig;
+    public $tableName;
 
     public function __construct($config = '') {
         $this->dbConfig = $this->parseConfig($config);
@@ -60,6 +60,11 @@ class Model implements Intf {
 
     public function execute($sql, $bind = array()) {
         return $this->db->execute($sql, $bind);
+    }
+
+    public function table($table = '') {
+        $this->tableName = $table;
+        return $this;
     }
 
     public function getTableName() {
