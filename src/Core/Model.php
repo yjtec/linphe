@@ -24,7 +24,7 @@ class Model implements Intf {
     }
 
     private function getDb($dbConfig) {
-        $guid = Tool::toGuidString($dbConfig);
+        $guid = \Yjtec\Lintools\Tools::toGuidString($dbConfig);
         if (!isset(self::$dbInstance[$guid])) {
             $dbType = ucwords(strtolower($dbConfig['db_type']));
             $class = '\\Yjtec\Linphe\\Lib\\Db\\' . $dbType;
@@ -69,7 +69,7 @@ class Model implements Intf {
 
     public function getTableName() {
         if (empty($this->tableName)) {
-            $this->tableName = Tool::parseName($this->dbConfig['db_prefix'] . $this->getModelName());
+            $this->tableName = \Yjtec\Lintools\Tools::parseName($this->dbConfig['db_prefix'] . $this->getModelName());
         }
         return $this->dbConfig['db_name'] . '.' . $this->tableName;
     }
