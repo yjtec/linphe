@@ -1,6 +1,6 @@
 {
     "name": "yjtec/linphe",
-    "description": "The Linphe Framework.",
+    "description": "Linphe框架",
     "keywords": ["framework", "linphe"],
     "type": "library",
     "license": "MIT",
