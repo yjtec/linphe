@@ -1,6 +1,6 @@
 <?php
 
-namespace Yjtec\Linphe\Lib;
+namespace Yjtec\Linphe;
 
 /**
  * 路由，Router::get(正则，匹配的类，类的方法，预调用函数);

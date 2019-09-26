@@ -1,6 +1,6 @@
 <?php
 
-namespace Yjtec\Linphe\Lib;
+namespace Yjtec\Linphe;
 
 use Yjtec\Linphe\Core;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Yjtec\Linphe\Lib;
+namespace Yjtec\Linphe;
 
 /**
  * 特殊钩子，尚未构思完成
