@@ -2,7 +2,7 @@
 
 namespace Yjtec\Linphe;
 
-use Yjtec\Linphe\Lib\Router;
+use Yjtec\Linphe\Router;
 
 class Core {
 
