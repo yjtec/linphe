@@ -2,6 +2,8 @@
 
 namespace Yjtec\Linphe\Core;
 
+use Yjtec\Linview\View;
+
 /**
  * Description of Controller
  *
