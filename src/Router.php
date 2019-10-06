@@ -84,7 +84,7 @@ class Router {
             }
             self::setRoute($func, $arguments[0], $arguments[1], isset($arguments[2]) && $arguments[2] ? $arguments[2] : '');
         } else {
-            throw new Exception('不支持的请求类型');
+            throw new \Exception('不支持的请求类型');
         }
     }
 

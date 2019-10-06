@@ -15,7 +15,7 @@ class Core {
         require_once __DIR__ . '/sysRouter.php';
         $routes = Router::getCLS(); //获取路由信息
         if (empty($routes)) {
-            throw new Exception('路由不存在');
+            throw new \Exception('路由不存在');
         }
         $class = $routes[0];
         $function = $routes[1];
@@ -24,7 +24,7 @@ class Core {
 
     public static function doClass($class, $function, $params) {
         if (!class_exists($class)) {
-            throw new Exception('不存在的类');
+            throw new \Exception('不存在的类');
         }
         if ($function && (new \ReflectionMethod($class, $function))->isStatic()) {
             return call_user_func_array(array($class, $function), $params);
