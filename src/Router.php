@@ -60,6 +60,12 @@ class Router {
             case 'post':
                 $param = [$_POST];
                 break;
+            case 'put':
+                if (is_null($_PUT)) {
+                    parse_str(file_get_contents('php://input'), $_PUT);
+                }
+                $param = [$_PUT];
+                break;
             case 'get':
             default :
                 unset($matches[0]);
