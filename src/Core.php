@@ -33,6 +33,12 @@ class Core {
         if ($function && method_exists($controller, $function)) {
             return call_user_func_array(array($controller, $function), $params);
         }
+        if ($function && method_exists($controller, '__call')) {
+            return call_user_func_array(array($controller, $function), $params);
+        }
+        if ($function && method_exists($class, '__callStatic')) {
+            return call_user_func_array(array($class, $function), $params);
+        }
         return true;
     }
 
