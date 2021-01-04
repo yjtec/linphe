@@ -38,8 +38,9 @@ abstract class Request {
     protected function _post() {
         if (self::$_post) {
             foreach (self::$_post as $k => $v) {
-                $this->{$k} = $p;
+                $this->{$k} = $v;
             }
+            $this->post = self::$_post;
         }
         return self::$_post;
     }

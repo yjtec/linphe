@@ -1,6 +1,8 @@
 # linphe
 
 ###route案例
+
+```php
 use Yjtec\Linphe\Lib\Router;
 
 if (php_sapi_name() == "cli") {// 只允许在cli下面运行 
