@@ -1,12 +1,14 @@
 {
     "name": "yjtec/linphe",
-    "description": "Linphe框架",
-    "keywords": ["framework", "linphe"],
+    "description": "Linphe框架，ioc",
+    "keywords": [
+        "framework",
+        "linphe"
+    ],
     "type": "library",
     "license": "MIT",
-    "authors": [
-        {
-            "name": "ax",
+    "authors": [{
+            "name": "Ax",
             "email": "18716463@qq.com"
         }
     ],
