@@ -9,7 +9,14 @@ namespace Yjtec\Linphe;
  */
 class Router {
 
-    const supportRequestType = ['get', 'post', 'put', 'delete', 'options', 'head', 'cli'];
+    const supportRequestGet = 'get';
+    const supportRequestPost = 'post';
+    const supportRequestPut = 'put';
+    const supportRequestDelete = 'delete';
+    const supportRequestOption = 'options';
+    const supportRequestHead = 'head';
+    const supportRequestCli = 'cli';
+    const supportRequestType = [self::supportRequestGet, self::supportRequestPost, self::supportRequestPut, self::supportRequestDelete, self::supportRequestOption, self::supportRequestHead, self::supportRequestCli];
 
     public static $Routers = array(); //所有的路由,get路由,post路由,cli路由
     public static $requestType; //请求类型，GET,POST等,特殊的CLI
@@ -18,16 +25,17 @@ class Router {
 
     /**
      * 一个router的标准样子，array[类，方法，参数]，其中方法和参数可以为空
-     * @return type
+     * @return array
      */
-    public static function getCLS() {
+    public static function findCLS() {
         self::requestType();
         self::requestUri();
         self::$CurRouter = [];
         if (self::$Routers[self::$requestType]) {
             foreach (self::$Routers[self::$requestType] as $route => $class_function) {
                 if (preg_match($route, self::$requestUri, $matches)) {
-                    self::$CurRouter = [$class_function[0], $class_function[1], self::getParam($matches)];
+                    self::$CurRouter = [$class_function[0], $class_function[1]];
+                    self::getParam($matches);
                     break;
                 }
             }
@@ -54,22 +62,24 @@ class Router {
     public static function getParam($matches) {
         $param = [];
         switch (self::$requestType) {
-            case 'cli':
-                $param = [$_SERVER['argv']];
+            case self::supportRequestCli:
+                Lib\Request::$_cli = $_SERVER['argv'];
                 break;
-            case 'post':
-                $param = [$_POST];
+            case self::supportRequestPost:
+                Lib\Request::$_post = $_POST;
+                Lib\Request::$_file = $_FILES;
                 break;
-            case 'put':
+            case self::supportRequestPut:
                 if (is_null($_PUT)) {
                     parse_str(file_get_contents('php://input'), $_PUT);
                 }
-                $param = [$_PUT];
+                Lib\Request::$_put = $_PUT;
                 break;
-            case 'get':
+            case self::supportRequestGet:
             default :
                 unset($matches[0]);
                 $param = array_values(str_replace('/', '', $matches));
+                Lib\Request::$_get = $param;
         }
         return $param;
     }
@@ -84,9 +94,6 @@ class Router {
         if (in_array($func, self::supportRequestType)) {
             if (!isset($arguments[0]) || !isset($arguments[1])) {
                 return false;
-            }
-            if (isset($arguments[3]) && is_callable($arguments[3])) {
-                $arguments[3]();
             }
             self::setRoute($func, $arguments[0], $arguments[1], isset($arguments[2]) && $arguments[2] ? $arguments[2] : '');
         } else {
