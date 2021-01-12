@@ -2,6 +2,9 @@
 
 namespace Yjtec\Linphe;
 
+use Exception;
+use Yjtec\Linphe\Lib\Request;
+
 /**
  * 路由，Router::get(正则，匹配的类，类的方法，预调用函数);
  *
@@ -60,26 +63,28 @@ class Router {
     }
 
     public static function getParam($matches) {
+        Request::$_reqUri = self::$requestUri;
+        Request::$_get = $_GET;
         $param = [];
         switch (self::$requestType) {
             case self::supportRequestCli:
-                Lib\Request::$_cli = $_SERVER['argv'];
+                Request::$_cli = $_SERVER['argv'];
                 break;
             case self::supportRequestPost:
-                Lib\Request::$_post = $_POST;
-                Lib\Request::$_file = $_FILES;
+                Request::$_post = $_POST;
+                Request::$_file = $_FILES;
                 break;
             case self::supportRequestPut:
                 if (is_null($_PUT)) {
                     parse_str(file_get_contents('php://input'), $_PUT);
                 }
-                Lib\Request::$_put = $_PUT;
+                Request::$_put = $_PUT;
                 break;
             case self::supportRequestGet:
             default :
                 unset($matches[0]);
                 $param = array_values(str_replace('/', '', $matches));
-                Lib\Request::$_get = $param;
+                Request::$_get = array_merge($param, Request::$_get);
         }
         return $param;
     }
@@ -97,7 +102,7 @@ class Router {
             }
             self::setRoute($func, $arguments[0], $arguments[1], isset($arguments[2]) && $arguments[2] ? $arguments[2] : '');
         } else {
-            throw new \Exception('不支持的请求类型');
+            throw new Exception('不支持的请求类型');
         }
     }
 
