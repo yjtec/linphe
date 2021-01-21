@@ -9,6 +9,7 @@ namespace Yjtec\Linphe\Lib;
  */
 abstract class Request {
 
+    public static $_reqUri;
     public static $_reqType;
     public static $_get;
     public static $_post;
