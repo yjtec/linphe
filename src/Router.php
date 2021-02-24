@@ -6,7 +6,7 @@ use Exception;
 use Yjtec\Linphe\Lib\Request;
 
 /**
- * 路由，Router::get(正则，匹配的类，类的方法，预调用函数);
+ * 路由，Router::get(正则，匹配的类，类的方法);
  *
  * @author Administrator
  */
@@ -19,7 +19,17 @@ class Router {
     const supportRequestOption = 'options';
     const supportRequestHead = 'head';
     const supportRequestCli = 'cli';
-    const supportRequestType = [self::supportRequestGet, self::supportRequestPost, self::supportRequestPut, self::supportRequestDelete, self::supportRequestOption, self::supportRequestHead, self::supportRequestCli];
+    const supportRequestAny = 'any';
+    const supportRequestType = [
+        self::supportRequestGet,
+        self::supportRequestPost,
+        self::supportRequestPut,
+        self::supportRequestDelete,
+        self::supportRequestOption,
+        self::supportRequestHead,
+        self::supportRequestCli,
+        self::supportRequestAny
+    ];
 
     public static $Routers = array(); //所有的路由,get路由,post路由,cli路由
     public static $requestType; //请求类型，GET,POST等,特殊的CLI
@@ -27,7 +37,7 @@ class Router {
     public static $CurRouter = array();
 
     /**
-     * 一个router的标准样子，array[类，方法，参数]，其中方法和参数可以为空
+     * 一个router的标准样子，array[类，方法]，其中方法可以为空
      * @return array
      */
     public static function findCLS() {
@@ -38,6 +48,15 @@ class Router {
             foreach (self::$Routers[self::$requestType] as $route => $class_function) {
                 if (preg_match($route, self::$requestUri, $matches)) {
                     self::$CurRouter = [$class_function[0], $class_function[1]];
+                    self::getParam($matches);
+                    break;
+                }
+            }
+        }
+        if (self::$Routers[self::supportRequestAny]) {
+            foreach (self::$Routers[self::supportRequestAny] as $route => $class_function) {
+                if (preg_match($route, self::$requestUri, $matches)) {
+                    self::$CurRouter = $class_function;
                     self::getParam($matches);
                     break;
                 }
@@ -90,7 +109,7 @@ class Router {
     }
 
 /////////////////////////////以下方法为设置路由/////////////////////////////
-    private static function setRoute($type, $route, $class, $function = '') {
+    private static function regRoute($type, $route, $class, $function = '') {
         self::$Routers[$type][$route] = [$class, $function];
     }
 
@@ -100,7 +119,7 @@ class Router {
             if (!isset($arguments[0]) || !isset($arguments[1])) {
                 return false;
             }
-            self::setRoute($func, $arguments[0], $arguments[1], isset($arguments[2]) && $arguments[2] ? $arguments[2] : '');
+            self::regRoute($func, $arguments[0], $arguments[1], isset($arguments[2]) && $arguments[2] ? $arguments[2] : '');
         } else {
             throw new Exception('不支持的请求类型');
         }
