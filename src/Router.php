@@ -44,7 +44,7 @@ class Router {
         self::requestType();
         self::requestUri();
         self::$CurRouter = [];
-        if (self::$Routers[self::$requestType]) {
+        if (isset(self::$Routers[self::$requestType]) && self::$Routers[self::$requestType]) {
             foreach (self::$Routers[self::$requestType] as $route => $class_function) {
                 if (preg_match($route, self::$requestUri, $matches)) {
                     self::$CurRouter = [$class_function[0], $class_function[1]];
@@ -53,7 +53,7 @@ class Router {
                 }
             }
         }
-        if (self::$Routers[self::supportRequestAny]) {
+        if (isset(self::$Routers[self::supportRequestAny]) && self::$Routers[self::supportRequestAny]) {
             foreach (self::$Routers[self::supportRequestAny] as $route => $class_function) {
                 if (preg_match($route, self::$requestUri, $matches)) {
                     self::$CurRouter = $class_function;
