@@ -7,36 +7,35 @@ namespace Yjtec\Linphe\Lib;
  *
  * @author Administrator
  */
-abstract class Request {
+abstract class Request
+{
 
-    public static $_reqUri;
-    public static $_reqType;
-    public static $_get;
-    public static $_post;
-    public static $_file;
-    public static $_put;
-    public static $_cli;
-    public $get, $post, $file, $put, $cli;
+    public static $_reqUri, $_reqType, $_get, $_post, $_file, $_put, $_cli, $_input;
+    public $get, $post, $file, $put, $cli, $input;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->_get();
         $this->_post();
         $this->_file();
         $this->_put();
         $this->_cli();
+        $this->_input();
         $this->verify();
     }
 
     public abstract function verify();
 
-    protected function _get() {
+    protected function _get()
+    {
         if (self::$_get) {
             $this->get = self::$_get;
         }
         return self::$_get;
     }
 
-    protected function _post() {
+    protected function _post()
+    {
         if (self::$_post) {
             foreach (self::$_post as $k => $v) {
                 $this->{$k} = $v;
@@ -46,25 +45,34 @@ abstract class Request {
         return self::$_post;
     }
 
-    protected function _file() {
+    protected function _file()
+    {
         if (self::$_file) {
             $this->file = self::$_file;
         }
         return self::$_file;
     }
 
-    protected function _put() {
+    protected function _put()
+    {
         if (self::$_put) {
             $this->put = self::$_put;
         }
         return self::$_put;
     }
 
-    protected function _cli() {
+    protected function _cli()
+    {
         if (self::$_cli) {
             $this->cli = self::$_cli;
         }
         return self::$_cli;
     }
-
+    protected function _input()
+    {
+        if (self::$_input) {
+            $this->input = self::$_input;
+        }
+        return self::$_input;
+    }
 }

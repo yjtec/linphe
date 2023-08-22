@@ -10,7 +10,8 @@ use Yjtec\Linphe\Lib\Request;
  *
  * @author Administrator
  */
-class Router {
+class Router
+{
 
     const supportRequestGet = 'get';
     const supportRequestPost = 'post';
@@ -40,7 +41,8 @@ class Router {
      * 一个router的标准样子，array[类，方法]，其中方法可以为空
      * @return array
      */
-    public static function findCLS() {
+    public static function findCLS()
+    {
         self::requestType();
         self::requestUri();
         self::$CurRouter = [];
@@ -65,7 +67,8 @@ class Router {
         return self::$CurRouter;
     }
 
-    public static function requestType() {
+    public static function requestType()
+    {
         if (PHP_SAPI === 'cli') {
             self::$requestType = 'cli';
         } else {
@@ -73,7 +76,8 @@ class Router {
         }
     }
 
-    public static function requestUri() {
+    public static function requestUri()
+    {
         if (PHP_SAPI === 'cli') {
             self::$requestUri = isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : null;
         } else {
@@ -81,7 +85,8 @@ class Router {
         }
     }
 
-    public static function getParam($matches) {
+    public static function getParam($matches)
+    {
         Request::$_reqUri = self::$requestUri;
         Request::$_get = $_GET;
         $param = [];
@@ -100,20 +105,23 @@ class Router {
                 Request::$_put = $_PUT;
                 break;
             case self::supportRequestGet:
-            default :
+            default:
                 unset($matches[0]);
                 $param = array_values(str_replace('/', '', $matches));
                 Request::$_get = array_merge($param, Request::$_get);
         }
+        Request::$_input = json_decode(file_get_contents('php://input'), true);
         return $param;
     }
 
-/////////////////////////////以下方法为设置路由/////////////////////////////
-    private static function regRoute($type, $route, $class, $function = '') {
+    /////////////////////////////以下方法为设置路由/////////////////////////////
+    private static function regRoute($type, $route, $class, $function = '')
+    {
         self::$Routers[$type][$route] = [$class, $function];
     }
 
-    public static function __callStatic($name, $arguments) {
+    public static function __callStatic($name, $arguments)
+    {
         $func = strtolower($name);
         if (in_array($func, self::supportRequestType)) {
             if (!isset($arguments[0]) || !isset($arguments[1])) {
@@ -124,5 +132,4 @@ class Router {
             throw new Exception('不支持的请求类型');
         }
     }
-
 }
