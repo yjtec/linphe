@@ -49,16 +49,9 @@ class Router
         if (isset(self::$Routers[self::$requestType]) && self::$Routers[self::$requestType]) {
             foreach (self::$Routers[self::$requestType] as $route => $class_function) {
                 if (preg_match($route, self::$requestUri, $matches)) {
-                    self::$CurRouter = [$class_function[0], $class_function[1]];
-                    self::getParam($matches);
-                    break;
-                }
-            }
-        }
-        if (isset(self::$Routers[self::supportRequestAny]) && self::$Routers[self::supportRequestAny]) {
-            foreach (self::$Routers[self::supportRequestAny] as $route => $class_function) {
-                if (preg_match($route, self::$requestUri, $matches)) {
-                    self::$CurRouter = $class_function;
+                    //classOrCallbackFunc===$class_function[0]
+                    //classFunc===$class_function[1]
+                    self::$CurRouter = [$route, $class_function[0], $class_function[1]];
                     self::getParam($matches);
                     break;
                 }
@@ -73,6 +66,9 @@ class Router
             self::$requestType = 'cli';
         } else {
             self::$requestType = strtolower($_SERVER['REQUEST_METHOD']);
+        }
+        if (!self::$requestType || self::$requestType == '' || !in_array(self::$requestType, self::supportRequestType)) {
+            self::$requestType = self::supportRequestAny;
         }
     }
 
@@ -115,21 +111,24 @@ class Router
     }
 
     /////////////////////////////以下方法为设置路由/////////////////////////////
-    private static function regRoute($type, $route, $class, $function = '')
+    private static function regRoute($reqType, $route, $classOrCallbackFunc, $classFunc = '')
     {
-        self::$Routers[$type][$route] = [$class, $function];
+        self::$Routers[$reqType][$route] = [$classOrCallbackFunc, $classFunc];
     }
 
     public static function __callStatic($name, $arguments)
     {
-        $func = strtolower($name);
-        if (in_array($func, self::supportRequestType)) {
-            if (!isset($arguments[0]) || !isset($arguments[1])) {
+        $reqType = strtolower($name);
+        if (in_array($reqType, self::supportRequestType)) {
+            $route = $arguments[0];
+            $classOrCallbackFunc = $arguments[1];
+            if (!isset($route) || !isset($classOrCallbackFunc)) {
                 return false;
             }
-            self::regRoute($func, $arguments[0], $arguments[1], isset($arguments[2]) && $arguments[2] ? $arguments[2] : '');
+            $classFunc = isset($arguments[2]) && $arguments[2] ? $arguments[2] : '';
+            self::regRoute($reqType, $route,  $classOrCallbackFunc, $classFunc);
         } else {
-            throw new Exception('不支持的请求类型');
+            throw new Exception('不支持的请求类型：' . $reqType);
         }
     }
 }
